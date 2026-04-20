@@ -96,6 +96,14 @@
   from { opacity:0; transform:scale(0.8); }
   to   { opacity:1; transform:scale(1); }
 }
+@keyframes modalIn {
+  from { opacity:0; transform:translateY(32px) scale(0.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes overlayIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
 
 html { scroll-behavior:smooth; }
 body {
@@ -546,8 +554,29 @@ body {
 .cal-round:hover { background: var(--paper-3); }
 .cal-round:last-child { border-right: none; }
 
-.cal-round.done { background: var(--paper-2); }
+.cal-round.done {
+  background: var(--paper-2);
+  cursor: pointer;
+}
+.cal-round.done:hover {
+  background: var(--paper-3);
+}
 .cal-round.done .cal-flag-name { color: var(--ink-2); }
+
+.cal-round.done::after {
+  content: 'VIEW RESULTS ›';
+  position: absolute;
+  bottom: 10px;
+  left: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: var(--ferrari);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cal-round.done:hover::after { opacity: 1; }
 
 .cal-round.next { background: var(--carbon); color: #fff; }
 .cal-round.next .cal-rnum { color: var(--ferrari); font-weight:700; }
@@ -626,6 +655,263 @@ body {
   width: 10px; height: 10px;
   background: var(--gold);
   clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+/* ===================== RACE RESULTS MODAL ===================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,10,10,0.82);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: overlayIn 0.25s ease both;
+}
+.modal-overlay.closing {
+  animation: overlayIn 0.2s ease reverse both;
+}
+
+.modal {
+  background: var(--paper);
+  max-width: 800px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border-top: 5px solid var(--ferrari);
+  animation: modalIn 0.3s cubic-bezier(.2,.9,.25,1) both;
+}
+.modal.closing {
+  animation: modalIn 0.2s ease reverse both;
+}
+
+.modal-header {
+  background: var(--carbon);
+  color: #fff;
+  padding: 28px 32px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.modal-header::before {
+  content:'';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(135deg, rgba(255,255,255,0.018) 0 2px, transparent 2px 16px);
+  pointer-events: none;
+}
+.modal-close {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+  z-index: 2;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+.modal-close:hover { background: rgba(255,255,255,0.22); }
+.modal-round-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .22em;
+  color: var(--ferrari);
+  padding: 5px 10px;
+  border: 1px solid var(--ferrari);
+  background: rgba(232,0,45,0.12);
+  display: inline-block;
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+.modal-race-name {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 0.95;
+  position: relative;
+  z-index: 1;
+}
+.modal-race-name em { font-style: italic; color: var(--ferrari); font-weight: 500; }
+.modal-circuit {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+.modal-circuit strong { color: #fff; font-weight: 500; }
+
+.modal-podium {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-bottom: 2px solid var(--ink);
+}
+.modal-pod {
+  padding: 20px 20px 18px;
+  border-right: 1px solid var(--rule-light);
+  position: relative;
+}
+.modal-pod:last-child { border-right: none; }
+.modal-pod.p1 { background: linear-gradient(135deg, rgba(212,160,23,0.18), var(--paper)); }
+.modal-pod.p2 { background: linear-gradient(135deg, rgba(160,160,160,0.14), var(--paper)); }
+.modal-pod.p3 { background: linear-gradient(135deg, rgba(176,108,48,0.14), var(--paper)); }
+.modal-pod-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  color: #fff;
+  padding: 4px 9px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+.p1 .modal-pod-badge { background: #d4a017; }
+.p2 .modal-pod-badge { background: #a0a0a0; }
+.p3 .modal-pod-badge { background: #b06c30; }
+.modal-pod-driver {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.modal-pod-team {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+}
+.modal-pod-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.modal-results-head {
+  display: grid;
+  grid-template-columns: 36px 1fr 130px 90px 80px;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--carbon);
+  color: rgba(255,255,255,0.55);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.modal-result-row {
+  display: grid;
+  grid-template-columns: 36px 1fr 130px 90px 80px;
+  gap: 8px;
+  padding: 11px 24px;
+  border-bottom: 1px solid var(--rule-light);
+  align-items: center;
+  transition: background 0.15s;
+  position: relative;
+}
+.modal-result-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--team-color, transparent);
+}
+.modal-result-row:hover { background: var(--paper-2); }
+.modal-result-row:last-child { border-bottom: none; }
+.modal-result-row.fav { background: linear-gradient(90deg, rgba(232,0,45,0.09) 0%, transparent 60%); }
+
+.mr-pos {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.mr-pos.top3 { color: var(--gold); }
+.mr-driver { display: flex; flex-direction: column; }
+.mr-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.mr-name.fav-name { color: var(--ferrari); font-weight: 700; }
+.mr-team {
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-top: 1px;
+}
+.mr-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.mr-pts {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.mr-fl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+.mr-fl.fastest { color: #9b59b6; font-weight: 700; }
+.mr-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--team-color, var(--ink-3));
+  padding: 2px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.modal-footer-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 2px solid var(--ink);
+  background: var(--carbon);
+}
+.modal-fstat {
+  padding: 16px 20px;
+  border-right: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+}
+.modal-fstat:last-child { border-right: none; }
+.modal-fstat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 6px;
+}
+.modal-fstat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
 }
 
 /* Favourite driver highlight */
@@ -795,7 +1081,6 @@ body {
   width: 4px;
   background: var(--team-color);
 }
-/* Favourite team constructor highlight */
 .con-row.fav-team {
   background: linear-gradient(90deg, rgba(232,0,45,0.08) 0%, transparent 60%);
 }
@@ -862,12 +1147,7 @@ body {
 .pod-driver-name { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; line-height: 1; }
 .pod-driver-team { font-size: 10px; color: var(--ink-3); margin-top: 3px; }
 .pod-time { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-2); font-weight: 500; }
-
-/* Highlight favourite driver in podium */
-.pod-row.fav-highlight .pod-driver-name {
-  color: var(--ferrari);
-  font-weight: 700;
-}
+.pod-row.fav-highlight .pod-driver-name { color: var(--ferrari); font-weight: 700; }
 
 .news-block { padding: 0; }
 .news-item {
@@ -880,7 +1160,6 @@ body {
 .news-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--ferrari); transition: width 0.25s; }
 .news-item:hover { background: var(--paper-2); padding-left: 28px; }
 .news-item:hover::before { width: 4px; }
-
 .news-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 9px; }
 .news-kicker {
   font-family: 'JetBrains Mono', monospace;
@@ -916,8 +1195,6 @@ body {
 .stat-big { font-family: 'Playfair Display', serif; font-size: clamp(28px, 3vw, 38px); font-weight: 700; color: #fff; line-height: 1; letter-spacing: -0.02em; margin-bottom: 9px; }
 .stat-big em { font-style: italic; color: var(--ferrari); font-weight: 500; }
 .stat-sub { font-family: 'Inter', sans-serif; font-size: 12px; color: rgba(255,255,255,0.58); font-weight: 400; }
-
-/* Favourite driver stat highlight */
 .stat.fav-stat { border-top: 3px solid var(--ferrari); }
 .stat.fav-stat .stat-label::after { content: ' ★'; color: var(--gold); }
 
@@ -948,6 +1225,10 @@ body {
   .stat:nth-child(4) { border-right: none; }
   .driver-row.leader::after { display: none; }
   .hero-sub { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .modal-results-head, .modal-result-row { grid-template-columns: 36px 1fr 100px 60px; }
+  .modal-results-head .mh-fl, .modal-result-row .mr-fl { display: none; }
+  .modal-podium { grid-template-columns: 1fr; }
+  .modal-pod { border-right: none; border-bottom: 1px solid var(--rule-light); }
 }
 @media (max-width: 540px) {
   .cd-num { font-size: 32px; }
@@ -956,6 +1237,9 @@ body {
   .driver-name { font-size: 14px; }
   .driver-pts { font-size: 17px; }
   .cal-flag-name { font-size: 15px; }
+  .modal { margin: 12px; }
+  .modal-footer-stats { grid-template-columns: 1fr; }
+  .modal-fstat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
 }
 </style>
 </head>
@@ -1006,7 +1290,6 @@ body {
         <h2 class="race-name">Miami <em>Grand Prix</em></h2>
         <div class="race-circuit"><strong>Miami International Autodrome</strong> · Hard Rock Stadium</div>
         <div class="race-circuit">Round 4 of 23 · 57 laps · 308.326 km</div>
-
         <div class="race-stats">
           <div class="race-stat">
             <div class="race-stat-label">Lap Record</div>
@@ -1022,7 +1305,6 @@ body {
           </div>
         </div>
       </div>
-
       <div class="race-right">
         <div class="countdown-label">Lights Out In</div>
         <div class="countdown">
@@ -1039,16 +1321,16 @@ body {
 <section class="cal-section">
   <div class="cal-head">
     <div class="cal-title">Season <em>Calendar</em></div>
-    <div class="cal-meta">23 Rounds · Mar → Dec 2026</div>
+    <div class="cal-meta">23 Rounds · Mar → Dec 2026 · Click completed races for full results</div>
   </div>
 
   <div class="cal-strip-wrap">
     <div class="cal-progress-track"><div class="cal-progress-fill" style="width: 13.6%;"></div></div>
     <div class="cal-strip" id="calStrip">
 
-      <div class="cal-round done"><div class="cal-rnum">R01<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇦🇺</div><div class="cal-country">Australia</div><div class="cal-flag-name">Albert Park</div><div class="cal-date">Mar 06–08</div><div class="cal-winner">G. Russell</div></div>
-      <div class="cal-round done"><div class="cal-rnum">R02<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇨🇳</div><div class="cal-country">China</div><div class="cal-flag-name">Shanghai</div><div class="cal-date">Mar 13–15</div><div class="cal-winner">K. Antonelli</div></div>
-      <div class="cal-round done"><div class="cal-rnum">R03<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇯🇵</div><div class="cal-country">Japan</div><div class="cal-flag-name">Suzuka</div><div class="cal-date">Mar 27–29</div><div class="cal-winner">K. Antonelli</div></div>
+      <div class="cal-round done" data-race="r01"><div class="cal-rnum">R01<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇦🇺</div><div class="cal-country">Australia</div><div class="cal-flag-name">Albert Park</div><div class="cal-date">Mar 06–08</div><div class="cal-winner">G. Russell</div></div>
+      <div class="cal-round done" data-race="r02"><div class="cal-rnum">R02<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇨🇳</div><div class="cal-country">China</div><div class="cal-flag-name">Shanghai</div><div class="cal-date">Mar 13–15</div><div class="cal-winner">K. Antonelli</div></div>
+      <div class="cal-round done" data-race="r03"><div class="cal-rnum">R03<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇯🇵</div><div class="cal-country">Japan</div><div class="cal-flag-name">Suzuka</div><div class="cal-date">Mar 27–29</div><div class="cal-winner">K. Antonelli</div></div>
       <div class="cal-round next"><div class="cal-rnum">R04 · NEXT<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇺🇸</div><div class="cal-country">USA</div><div class="cal-flag-name">Miami</div><div class="cal-date">May 01–03</div></div>
       <div class="cal-round"><div class="cal-rnum">R05<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇨🇦</div><div class="cal-country">Canada</div><div class="cal-flag-name">Montreal</div><div class="cal-date">May 22–24</div></div>
       <div class="cal-round"><div class="cal-rnum">R06<span class="cal-status-dot"></span></div><div class="cal-flag-emoji">🇲🇨</div><div class="cal-country">Monaco</div><div class="cal-flag-name">Monte Carlo</div><div class="cal-date">Jun 05–07</div></div>
@@ -1075,14 +1357,12 @@ body {
 
 <section class="main-section">
   <div class="main-grid">
-
     <div class="col">
       <div class="col-head">
         <div class="col-num">§ 01</div>
         <div class="col-name">Drivers' <em>Championship</em></div>
         <div class="col-sub">Top 10 · After 3 Rounds</div>
       </div>
-
       <div class="driver-row leader" style="--team-color: var(--mercedes); animation-delay:4.5s;">
         <div class="driver-pos">01</div>
         <div class="driver-info"><div class="driver-line"><span class="driver-name">K. Antonelli</span><span class="driver-code" style="background:var(--mercedes); color:#000;">ANT</span></div><div class="driver-team">Mercedes · ITA</div></div>
@@ -1141,7 +1421,6 @@ body {
         <div class="col-name">Constructors' <em>Cup</em></div>
         <div class="col-sub">All 11 teams · 2026</div>
       </div>
-
       <div class="con-row" style="--team-color: var(--mercedes); animation-delay:4.5s;">
         <div class="con-top"><div class="con-pos">01</div><div><div class="con-name">Mercedes-AMG</div><div class="con-engine">Mercedes PU · DEU</div></div><div class="con-pts">135</div></div>
         <div class="con-bar"><div class="con-bar-fill" style="width:100%; animation-delay:5.5s;"></div></div>
@@ -1194,7 +1473,6 @@ body {
         <div class="col-name">Paddock <em>Intel</em></div>
         <div class="col-sub">Last Race · Top Stories</div>
       </div>
-
       <div class="podium-block">
         <div class="podium-head">Japanese GP · Suzuka · Result</div>
         <div class="podium-list">
@@ -1215,7 +1493,6 @@ body {
           </div>
         </div>
       </div>
-
       <div class="news-block">
         <article class="news-item lead">
           <div class="news-meta"><span class="news-kicker">The Story</span><span class="news-num">01</span></div>
@@ -1239,7 +1516,6 @@ body {
         </article>
       </div>
     </div>
-
   </div>
 </section>
 
@@ -1329,6 +1605,211 @@ body {
     }
   }, 5000);
 })();
+
+/* ===================== RACE RESULTS DATA ===================== */
+const RACE_DATA = {
+  r01: {
+    round: 'Round 01',
+    name: 'Australian Grand Prix',
+    nameHtml: 'Australian <em>Grand Prix</em>',
+    flag: '🇦🇺',
+    circuit: '<strong>Albert Park Circuit</strong> · Melbourne · 58 laps · 307.574 km',
+    date: '8 March 2026',
+    fastestLap: { driver: 'K. Antonelli', time: '1:20.235', team: 'Mercedes' },
+    safetyCar: '1 deployment (lap 22)',
+    attendance: '338,000',
+    results: [
+      { pos:1,  name:'George Russell',       code:'RUS', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'1:24:32.611', pts:25, fl:false, fav:false },
+      { pos:2,  name:'Kimi Antonelli',        code:'ANT', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'+4.218',       pts:19, fl:false, fav:false },
+      { pos:3,  name:'Charles Leclerc',       code:'LEC', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+12.541',      pts:15, fl:false, fav:true  },
+      { pos:4,  name:'Lewis Hamilton',        code:'HAM', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+18.009',      pts:12, fl:false, fav:false },
+      { pos:5,  name:'Lando Norris',          code:'NOR', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+26.774',      pts:10, fl:false, fav:false },
+      { pos:6,  name:'Oscar Piastri',         code:'PIA', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+33.120',      pts:8,  fl:false, fav:false },
+      { pos:7,  name:'Pierre Gasly',          code:'GAS', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+44.882',      pts:6,  fl:false, fav:false },
+      { pos:8,  name:'Oliver Bearman',        code:'BEA', team:'Haas',         color:'#B6BABD', colorText:'#000', time:'+52.319',      pts:4,  fl:false, fav:false },
+      { pos:9,  name:'Liam Lawson',           code:'LAW', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+58.447',      pts:2,  fl:false, fav:false },
+      { pos:10, name:'Isack Hadjar',          code:'HAD', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+1:02.113',    pts:1,  fl:false, fav:false },
+      { pos:11, name:'Max Verstappen',        code:'VER', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+1:09.554',    pts:0,  fl:true,  fav:false },
+      { pos:12, name:'Yuki Tsunoda',          code:'TSU', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+1:14.208',    pts:0,  fl:false, fav:false },
+      { pos:13, name:'Jack Doohan',           code:'DOO', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:14, name:'Nico Hülkenberg',       code:'HUL', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:15, name:'Gabriel Bortoleto',     code:'BOR', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:16, name:'Alexander Albon',       code:'ALB', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:17, name:'Carlos Sainz',          code:'SAI', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+2 laps',      pts:0,  fl:false, fav:false },
+      { pos:18, name:'Fernando Alonso',       code:'ALO', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+      { pos:19, name:'Lance Stroll',          code:'STR', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+      { pos:20, name:'Andretti Hartley',      code:'AHR', team:'Cadillac',     color:'#8A9099', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+    ]
+  },
+  r02: {
+    round: 'Round 02',
+    name: 'Chinese Grand Prix',
+    nameHtml: 'Chinese <em>Grand Prix</em>',
+    flag: '🇨🇳',
+    circuit: '<strong>Shanghai International Circuit</strong> · 56 laps · 305.066 km',
+    date: '15 March 2026',
+    fastestLap: { driver: 'G. Russell', time: '1:33.644', team: 'Mercedes' },
+    safetyCar: 'None',
+    attendance: '200,000',
+    results: [
+      { pos:1,  name:'Kimi Antonelli',        code:'ANT', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'1:38:02.971', pts:25, fl:false, fav:false },
+      { pos:2,  name:'George Russell',        code:'RUS', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'+6.882',       pts:18, fl:true,  fav:false },
+      { pos:3,  name:'Lewis Hamilton',        code:'HAM', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+14.332',      pts:15, fl:false, fav:false },
+      { pos:4,  name:'Charles Leclerc',       code:'LEC', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+19.887',      pts:12, fl:false, fav:true  },
+      { pos:5,  name:'Oscar Piastri',         code:'PIA', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+28.441',      pts:10, fl:false, fav:false },
+      { pos:6,  name:'Lando Norris',          code:'NOR', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+35.119',      pts:8,  fl:false, fav:false },
+      { pos:7,  name:'Isack Hadjar',          code:'HAD', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+48.002',      pts:6,  fl:false, fav:false },
+      { pos:8,  name:'Oliver Bearman',        code:'BEA', team:'Haas',         color:'#B6BABD', colorText:'#000', time:'+55.774',      pts:4,  fl:false, fav:false },
+      { pos:9,  name:'Pierre Gasly',          code:'GAS', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+1:02.558',    pts:2,  fl:false, fav:false },
+      { pos:10, name:'Max Verstappen',        code:'VER', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+1:11.334',    pts:1,  fl:false, fav:false },
+      { pos:11, name:'Liam Lawson',           code:'LAW', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+1:18.009',    pts:0,  fl:false, fav:false },
+      { pos:12, name:'Yuki Tsunoda',          code:'TSU', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+1:24.667',    pts:0,  fl:false, fav:false },
+      { pos:13, name:'Jack Doohan',           code:'DOO', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+1:30.882',    pts:0,  fl:false, fav:false },
+      { pos:14, name:'Nico Hülkenberg',       code:'HUL', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:15, name:'Alexander Albon',       code:'ALB', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:16, name:'Carlos Sainz',          code:'SAI', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:17, name:'Gabriel Bortoleto',     code:'BOR', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:18, name:'Fernando Alonso',       code:'ALO', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'+2 laps',      pts:0,  fl:false, fav:false },
+      { pos:19, name:'Lance Stroll',          code:'STR', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'+2 laps',      pts:0,  fl:false, fav:false },
+      { pos:20, name:'Andretti Hartley',      code:'AHR', team:'Cadillac',     color:'#8A9099', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+    ]
+  },
+  r03: {
+    round: 'Round 03',
+    name: 'Japanese Grand Prix',
+    nameHtml: 'Japanese <em>Grand Prix</em>',
+    flag: '🇯🇵',
+    circuit: '<strong>Suzuka International Racing Course</strong> · 53 laps · 307.471 km',
+    date: '29 March 2026',
+    fastestLap: { driver: 'G. Russell', time: '1:28.411', team: 'Mercedes' },
+    safetyCar: '1 deployment (lap 8)',
+    attendance: '225,000',
+    results: [
+      { pos:1,  name:'Kimi Antonelli',        code:'ANT', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'1:28:14.802', pts:25, fl:false, fav:false },
+      { pos:2,  name:'George Russell',        code:'RUS', team:'Mercedes',     color:'#27F4D2', colorText:'#000', time:'+3.441',       pts:18, fl:true,  fav:false },
+      { pos:3,  name:'Charles Leclerc',       code:'LEC', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+9.127',       pts:15, fl:false, fav:true  },
+      { pos:4,  name:'Lewis Hamilton',        code:'HAM', team:'Ferrari',      color:'#E8002D', colorText:'#fff', time:'+14.882',      pts:12, fl:false, fav:false },
+      { pos:5,  name:'Max Verstappen',        code:'VER', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+29.554',      pts:10, fl:false, fav:false },
+      { pos:6,  name:'Lando Norris',          code:'NOR', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+38.114',      pts:8,  fl:false, fav:false },
+      { pos:7,  name:'Oscar Piastri',         code:'PIA', team:'McLaren',      color:'#FF8000', colorText:'#fff', time:'+42.778',      pts:6,  fl:false, fav:false },
+      { pos:8,  name:'Oliver Bearman',        code:'BEA', team:'Haas',         color:'#B6BABD', colorText:'#000', time:'+55.009',      pts:4,  fl:false, fav:false },
+      { pos:9,  name:'Pierre Gasly',          code:'GAS', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+1:02.330',    pts:2,  fl:false, fav:false },
+      { pos:10, name:'Liam Lawson',           code:'LAW', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+1:09.887',    pts:1,  fl:false, fav:false },
+      { pos:11, name:'Isack Hadjar',          code:'HAD', team:'Racing Bulls', color:'#6692FF', colorText:'#fff', time:'+1:16.441',    pts:0,  fl:false, fav:false },
+      { pos:12, name:'Yuki Tsunoda',          code:'TSU', team:'Red Bull',     color:'#3671C6', colorText:'#fff', time:'+1:22.009',    pts:0,  fl:false, fav:false },
+      { pos:13, name:'Jack Doohan',           code:'DOO', team:'Alpine',       color:'#0093CC', colorText:'#fff', time:'+1:29.554',    pts:0,  fl:false, fav:false },
+      { pos:14, name:'Gabriel Bortoleto',     code:'BOR', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:15, name:'Nico Hülkenberg',       code:'HUL', team:'Audi',         color:'#00877C', colorText:'#fff', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:16, name:'Alexander Albon',       code:'ALB', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:17, name:'Carlos Sainz',          code:'SAI', team:'Williams',     color:'#64C4FF', colorText:'#000', time:'+1 lap',       pts:0,  fl:false, fav:false },
+      { pos:18, name:'Fernando Alonso',       code:'ALO', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'+2 laps',      pts:0,  fl:false, fav:false },
+      { pos:19, name:'Lance Stroll',          code:'STR', team:'Aston Martin', color:'#229971', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+      { pos:20, name:'Andretti Hartley',      code:'AHR', team:'Cadillac',     color:'#8A9099', colorText:'#fff', time:'DNF',          pts:0,  fl:false, fav:false },
+    ]
+  }
+};
+
+/* ===================== MODAL LOGIC ===================== */
+function buildResultRow(r, i) {
+  const isTop3 = r.pos <= 3;
+  const flClass = r.fl ? 'fastest' : '';
+  const favClass = r.fav ? 'fav' : '';
+  const nameClass = r.fav ? 'mr-name fav-name' : 'mr-name';
+  const posClass = isTop3 ? 'mr-pos top3' : 'mr-pos';
+  return `<div class="modal-result-row ${favClass}" style="--team-color:${r.color}; animation-delay:${0.04*i}s;">
+    <div class="${posClass}">${String(r.pos).padStart(2,'0')}</div>
+    <div class="mr-driver">
+      <span class="${nameClass}">${r.name}${r.fav ? ' ★' : ''} <span class="mr-code" style="background:${r.color}; color:${r.colorText};">${r.code}</span></span>
+      <span class="mr-team">${r.team}</span>
+    </div>
+    <div class="mr-time">${r.time}</div>
+    <div class="mr-pts">${r.pts > 0 ? r.pts : '—'}</div>
+    <div class="mr-fl ${flClass}">${r.fl ? '⬛ FL' : ''}</div>
+  </div>`;
+}
+
+function openModal(raceId) {
+  const d = RACE_DATA[raceId];
+  if (!d) return;
+  const p1 = d.results[0], p2 = d.results[1], p3 = d.results[2];
+
+  const podHtml = `
+    <div class="modal-podium">
+      <div class="modal-pod p1">
+        <div class="modal-pod-badge">P1 · WINNER</div>
+        <div class="modal-pod-driver ${p1.fav ? 'fav-name' : ''}" style="${p1.fav ? 'color:var(--ferrari)' : ''}">${p1.name}</div>
+        <div class="modal-pod-team">${p1.team}</div>
+        <div class="modal-pod-time">${p1.time}</div>
+      </div>
+      <div class="modal-pod p2">
+        <div class="modal-pod-badge">P2</div>
+        <div class="modal-pod-driver">${p2.name}</div>
+        <div class="modal-pod-team">${p2.team}</div>
+        <div class="modal-pod-time">${p2.time}</div>
+      </div>
+      <div class="modal-pod p3">
+        <div class="modal-pod-badge">P3</div>
+        <div class="modal-pod-driver ${p3.fav ? 'fav-name' : ''}" style="${p3.fav ? 'color:var(--ferrari)' : ''}">${p3.name}${p3.fav ? ' ★' : ''}</div>
+        <div class="modal-pod-team">${p3.team}</div>
+        <div class="modal-pod-time">${p3.time}</div>
+      </div>
+    </div>`;
+
+  const rowsHtml = d.results.map((r,i) => buildResultRow(r,i)).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" id="raceModal">
+      <div class="modal-header">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div class="modal-round-tag">${d.flag} ${d.round} · ${d.date}</div>
+        <div class="modal-race-name">${d.nameHtml}</div>
+        <div class="modal-circuit">${d.circuit}</div>
+      </div>
+      ${podHtml}
+      <div class="modal-results-head">
+        <div>POS</div><div>DRIVER</div><div>TIME / GAP</div><div>PTS</div><div class="mh-fl">FL</div>
+      </div>
+      ${rowsHtml}
+      <div class="modal-footer-stats">
+        <div class="modal-fstat">
+          <div class="modal-fstat-label">Fastest Lap</div>
+          <div class="modal-fstat-val">${d.fastestLap.driver} — ${d.fastestLap.time}</div>
+        </div>
+        <div class="modal-fstat">
+          <div class="modal-fstat-label">Safety Car</div>
+          <div class="modal-fstat-val">${d.safetyCar}</div>
+        </div>
+        <div class="modal-fstat">
+          <div class="modal-fstat-label">Attendance</div>
+          <div class="modal-fstat-val">${d.attendance}</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = 'hidden';
+
+  function close() {
+    overlay.classList.add('closing');
+    document.getElementById('raceModal').classList.add('closing');
+    setTimeout(() => { overlay.remove(); document.body.style.overflow = ''; }, 200);
+  }
+
+  document.getElementById('modalClose').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') { close(); document.removeEventListener('keydown', esc); }
+  });
+}
+
+document.querySelectorAll('.cal-round.done').forEach(el => {
+  el.addEventListener('click', () => {
+    const raceId = el.getAttribute('data-race');
+    if (raceId) openModal(raceId);
+  });
+});
 </script>
 </body>
 </html>
